@@ -28,29 +28,67 @@
         <rest_variables/>
         <role_conditions/>
         <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+gs.include('DurationCalculator');
+executeSample();
+ 
+/**
+ * Function to house the sample script.
+ */
+function executeSample(){
+ 
+    // First we need a DurationCalculator object.
+    var dc = new DurationCalculator();
+ 
+    // Compute a simple duration without any schedule. The arguments
+    // can also be of type GlideDateTime, such as fields from a GlideRecord.
+    var dur = dc.calcScheduleDuration("2012-05-01", "2012-05-02");
+    gs.log("calcScheduleDuration no schedule: " + dur); // 86400 seconds (24 hours)
+ 
+    // The above sample is useful in limited cases. We almost always want to 
+    // use some schedule in a duration computation, let's load a schedule.
+    addSchedule(dc);
+ 
+    // Compute a duration using the schedule. The schedule
+    // specifies a nine hour work day. The output of this is 32400 seconds, or
+    // a nine hour span.
+    dur = dc.calcScheduleDuration("2012-05-23 12:00:00","2012-05-24 12:00:00");
+    gs.log("calcScheduleDuration with schedule: " + dur); // 32400 seconds (9 hours)
+ 
+    // Compute a duration that spans a weekend and holiday. Even though this
+    // spans three days, it only spans 9 work hours based on the schedule.
+    dur = dc.calcScheduleDuration("2012-05-25 12:00:00", "2012-05-29 12:00:00");
+    gs.log("calcScheduleDuration with schedule spaning holiday: " + dur); // 32400 seconds (9 hours)
+ 
+    // Use the current date time in a calculation. The output of this is
+    // dependent on when you run it.
+    var now = new Date();
+    dur = dc.calcScheduleDuration("2012-05-15", new GlideDateTime());
+    gs.log("calcScheduleDuration with schedule to now: " + dur); // Different on every run.
+}
+ 
 
-// 	gs.warn("current.u_duration.value is");
-// 	gs.error("current.u_duration.value is");
-	gs.debug("current.u_duration.value is");
+	var niutils = new NeedItUtils();
 
 	try{
-		current.u_duration.setValue(33);
+		
+		var dueDate = current.u_when_needed;
+		var today = new GlideDateTime().getLocalDate();
+		
+		var vduration = niutils.calcDuration(current.u_when_needed);
+		gs.info("NeedItUtils. result duration ==" + vduration );
+		
+		current.u_duration.setValue(vduration );
+		//current.u_duration.setValue(33);
 	} catch(err) {
 		gs.error("Needit current.u_duration... err:" + err);
 	}
-	// Add your code here
+	
 	try{
-		var myObj = new GlideRecord('x_58872_needit_needit');
-		myObj.setValue('u_duration', 3);
-		gs.info("current duration is " + myObj.getValue(u_duration));
-		gs.info("current.u_duration.getValue() is " + current.u_duration.getValue());
+		niutils.testDuration(current.u_when_needed);
 	} catch(err) {
-		gs.error("Needit err:" + err);
+		gs.error("Needit testDuration... err:" + err);
 	}
-// 	gs.warn("current.u_duration.value is");
-// 	gs.error("current.u_duration.value is");
-// 	gs.debug("current.u_duration.value is");
-	//gs.error("The value of the Short description field is " + short_description);
+
 
 })(current, previous);]]></script>
         <sys_class_name>sys_script</sys_class_name>
@@ -59,7 +97,7 @@
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>92d52cf02f57d410f751d3f62799b667</sys_id>
-        <sys_mod_count>9</sys_mod_count>
+        <sys_mod_count>20</sys_mod_count>
         <sys_name>Needit Duration field value set</sys_name>
         <sys_overrides/>
         <sys_package display_value="NeedIt" source="x_58872_needit">6ead8e780f603200cd674f8ce1050ed1</sys_package>
@@ -67,7 +105,7 @@
         <sys_scope display_value="NeedIt">6ead8e780f603200cd674f8ce1050ed1</sys_scope>
         <sys_update_name>sys_script_92d52cf02f57d410f751d3f62799b667</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2020-09-14 09:42:28</sys_updated_on>
+        <sys_updated_on>2020-09-24 06:53:25</sys_updated_on>
         <template/>
         <when>before</when>
     </sys_script>

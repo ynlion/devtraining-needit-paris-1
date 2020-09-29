@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_58872_needit.DateTimeFunc</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>DateTimeFunc</name>
+        <script><![CDATA[var DateTimeFunc = Class.create();
+DateTimeFunc.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+    addTime: function() {
+        //시작 날짜 선택에 따라 종료 날짜에 시간을 추가하려는 경우
+
+        // Get the Start Date
+
+        var start = this.getParameter('movedate');
+
+        var timeToAdd = this.getParameter('time_to_add');
+
+        var gdt = new GlideDateTime();
+
+        gdt.setDisplayValue(start);
+
+        //add time to Start Date
+
+        gdt.addSeconds(timeToAdd);
+
+        //Return the End Date to Client Script
+
+        return gdt.getDisplayValue();
+
+    },
+
+    addTimeSchedule: function() {
+        //종료 날짜에 시간을 추가하고 싶지만 종료 날짜가 주말이나 휴무 시간에 속하지 않아야하는 경우. 일정은 cmn_schedule 테이블이 있어야합니다.
+
+        var start = this.getParameter('movedate');
+
+        var timeToAdd = this.getParameter('time_to_add');
+
+        var sch = this.getParameter('schedule');
+
+        var gdt = new GlideDateTime();
+
+        gdt.setDisplayValue(start);
+
+        //Get a schedule by name to calculate duration
+
+        var schedRec = new GlideRecord('cmn_schedule');
+
+        schedRec.get('name', sch);
+
+        if (typeof GlideSchedule != 'undefined')
+
+            var sched = new GlideSchedule(schedRec.sys_id);
+
+        else
+
+            var sched = new Packages.com.glide.schedules.Schedule(schedRec.sys_id);
+
+        //Set the amount of time to add (in seconds)
+
+        durToAdd = new GlideDuration(timeToAdd * 1000);
+
+        var newDateTime = sched.add(gdt, durToAdd, '');
+
+        //Return the new date
+
+        return newDateTime.getDisplayValue();
+
+    },
+
+    ValidateLeadTime: function() {
+        //리드 타임을 검증하려는 경우. 예를 들어, 대부분의 조직은 포괄적 인 변경을 위해 2주의 리드 타임을 원합니다. 따라서 변경 사항을 제출하는 동안 요청자는 오늘부터 2 주 후인 계획된 시작 날짜를 선택해야합니다.
+        try {
+			gs.info("DateTimeFunc.. start.");
+
+            var se_start_date = this.getParameter('start_date');
+            var opened_date = gs.nowDateTime();
+
+            var currentDateTime = new GlideDateTime();
+            currentDateTime.setDisplayValue(opened_date);
+
+            var start_date = new GlideDateTime();
+            start_date.setDisplayValue(se_start_date);
+
+            if (se_start_date != '' && start_date < currentDateTime) {
+                return 1; // Start Date Entered is in past
+            } else if (se_start_date != '') {
+
+                var dc = new DurationCalculator();
+                dc.setStartDateTime(currentDateTime);
+
+                if (!dc.calcDuration(2 * 24 * 3600)) // Add 2 days
+                    gs.log("*** Error calculating duration");
+                var newDateTime = dc.getEndDateTime();
+
+                if (start_date < newDateTime) {
+                    return 2; // Date entered is within the 2 days of lead time
+                }
+
+            }
+
+        } catch (err) {
+            gs.error(err);
+        }
+
+    },
+
+    compareDates: function() {
+        //두 날짜를 비교하고 더 큰 날짜를 찾으려는 경우
+
+        var chg_start_date = this.getParameter('start_date');
+
+        var chg_end_date = this.getParameter('end_date');
+
+        if (chg_start_date > chg_end_date)
+
+        {
+
+            return true;
+
+        }
+
+        return false;
+
+    },
+
+    ValidateBlackOuts: function() {
+        //요청 또는 변경 구현 날짜가 블랙 아웃 기간에 속하지 않기를 원할 때.
+
+        var ch_start_date = this.getParameter('start_date');
+
+        var start_date = new GlideDateTime();
+
+        start_date.setDisplayValue(ch_start_date);
+
+        var g = new GlideRecord('cmn_schedule');
+
+        var q = g.addQuery('name', 'Year-End Freeze');
+
+        q.addOrCondition('name', 'IT Infrastructure Blackouts');
+
+        g.query();
+
+        while (g.next()) {
+
+            var sched = new GlideSchedule(g.sys_id);
+
+            if (sched.isInSchedule(start_date)) {
+
+                return true;
+
+            }
+
+        }
+
+        return false;
+
+    },
+    type: 'DateTimeFunc'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-09-24 07:33:04</sys_created_on>
+        <sys_id>9037c4842fef9010f751d3f62799b699</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>DateTimeFunc</sys_name>
+        <sys_package display_value="NeedIt" source="x_58872_needit">6ead8e780f603200cd674f8ce1050ed1</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="NeedIt">6ead8e780f603200cd674f8ce1050ed1</sys_scope>
+        <sys_update_name>sys_script_include_9037c4842fef9010f751d3f62799b699</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-09-24 08:38:27</sys_updated_on>
+    </sys_script_include>
+</record_update>

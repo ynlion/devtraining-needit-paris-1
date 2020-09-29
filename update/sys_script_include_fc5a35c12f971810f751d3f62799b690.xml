@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>x_58872_needit.NeedItUtils</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description>Utils Script Include for the NeedIt application.</description>
+        <name>NeedItUtils</name>
+        <script><![CDATA[var NeedItUtils = Class.create();
+NeedItUtils.prototype = {
+    initialize: function() {
+    },
+	isDatePast: function(strDate){
+		// Create GlideDateTime objects for the current date and the passed in date
+		var rightnow = new GlideDateTime();
+		var testdate = new GlideDateTime(strDate);
+		
+		// If the testdate is before rightnow, return true, else return false
+		if (testdate.before(rightnow)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	},
+	isDateToday: function(strDate){
+		
+		// Create GlideDateTime objects for the current date and the passed in date
+		var rightnow = new GlideDateTime();
+		var testdate = new GlideDateTime(strDate);
+		// Get the date portion of rightnow and testdate (no timestamp)
+		var today = rightnow.getLocalDate();
+		var istoday = testdate.getLocalDate();
+	
+		// Compare today and istoday to see if they are the same day today.
+		
+		if(today.compareTo(istoday) == 0) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	},
+	calcDuration: function(dueDate){
+		try{
+			var today = new GlideDateTime().getLocalDate();
+			var testDate = new GlideDateTime(dueDate);
+			
+// 			var myTZ = gs.getUser().getTZ();
+// 			gs.info("NeedItUtils... myTZ="+myTZ);
+			
+			var startDate = new GlideDateTime('2014-10-16 02:00:00');
+			var endDate = new GlideDateTime('2014-10-18 04:00:00');
+			
+// 			var dc = new DurationCalculator();
+			var dc = new GlideSchedule('090eecae0a0a0b260077e1dfa71da828', gs.getProperty('glide.sys.default.tz'));
+// 			dc.setTimeZone(myTZ);
+			var duration = dc.duration(startDate, endDate);
+
+			gs.info("NeedItUtils.calcDuration...duration.getValue()=" + duration.getValue());
+			gs.info("NeedItUtils.calcDuration...duration.getRoundedDayPart()=" + duration.getRoundedDayPart());
+			gs.info("NeedItUtils.calcDuration...duration.getDayPart()=" + duration.getDayPart());
+			gs.info("NeedItUtils.calcDuration...duration.getDisplayValue()=" + duration.getDisplayValue());
+			gs.info("NeedItUtils.calcDuration...duration.getDurationValue()=" + duration.getDurationValue());
+
+			var my_duration = dc.duration(today, testDate);
+			return my_duration.getDurationValue();
+			
+		} catch(err) {
+			gs.error("Needit.NeedItUtils err:" + err);
+			return 30;
+		}
+	},
+	testDuration : function(dueDate){
+		gs.include('DurationCalculator');
+		
+		// First we need a DurationCalculator object.
+		var dc = new DurationCalculator();
+
+		// --------------- No schedule examples ------------------
+
+		// Simple computation of a due date without using a schedule. Seconds
+		// are added to the start date continuously to get to a due date.
+		var gdt = new GlideDateTime("2012-05-01 00:00:00");
+		dc.setStartDateTime(gdt);
+		if (!dc.calcDuration(2 * 24 * 3600)) { // 2 days
+			gs.log("*** Error calculating duration");
+			return;
+		}
+		gs.log("calcDuration no schedule: " + dc.getEndDateTime()); // "2012-05-03 00:00:00" two days later
+
+		// Start in the middle of the night (2:00 am) and compute a due date 1 hour in the future
+		// Without a schedule this yields 3:00 am.
+		var gdt2 = new GlideDateTime("2012-05-03 02:00:00");
+		dc.setStartDateTime(gdt2);
+		if (!dc.calcDuration(3600)) {
+			gs.log("*** Error calculating duration");
+			return;
+		}
+		gs.log("Middle of night + 1 hour (no schedule): " + dc.getEndDateTime()); // No scheduled start date, just add 1 hour
+	},
+    type: 'NeedItUtils'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-09-15 08:03:36</sys_created_on>
+        <sys_id>fc5a35c12f971810f751d3f62799b690</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name>NeedItUtils</sys_name>
+        <sys_package display_value="NeedIt" source="x_58872_needit">6ead8e780f603200cd674f8ce1050ed1</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="NeedIt">6ead8e780f603200cd674f8ce1050ed1</sys_scope>
+        <sys_update_name>sys_script_include_fc5a35c12f971810f751d3f62799b690</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-09-24 06:45:22</sys_updated_on>
+    </sys_script_include>
+</record_update>

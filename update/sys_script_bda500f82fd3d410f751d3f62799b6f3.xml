@@ -7,7 +7,7 @@
         <action_query>false</action_query>
         <action_update>true</action_update>
         <active>true</active>
-        <add_message>true</add_message>
+        <add_message>false</add_message>
         <advanced>true</advanced>
         <change_fields>false</change_fields>
         <client_callable>false</client_callable>
@@ -29,22 +29,42 @@
         <role_conditions/>
         <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
 
-// rightnow stores the current time
-	var rightnow = new GlideDateTime();
-	// Create a GlideDateTime object for the When needed date
-	var whenNeeded = new GlideDateTime(current.u_when_needed);
+// 	// rightnow stores the current time
+// 	var rightnow = new GlideDateTime();
+// 	// Create a GlideDateTime object for the When needed date
+// 	var whenNeeded = new GlideDateTime(current.u_when_needed);
 	
-	//gs.error("The value of the Short description field is " + short_description);
-	gs.debug("this is debug message");
-	gs.info("this is info message");
-	gs.warn("this is warn messange");
+// 	//gs.error("The value of the Short description field is " + short_description);
+// 	gs.debug("this is debug message");
+// 	gs.info("this is info message");
+// 	gs.warn("this is warn messange");
 	
-	// If the When needed date is before rightnow, do not write the record to the database
-	// Output an error message to the screen
-	if(whenNeeded.before(rightnow)){
-		gs.addErrorMessage("When needed date cannot be in the past.  Your request has not been saved to the database.");
+// 	// If the When needed date is before rightnow, do not write the record to the database
+// 	// Output an error message to the screen
+// 	if(whenNeeded.before(rightnow)){
+// 		gs.addErrorMessage("When needed date cannot be in the past.  Your request has not been saved to the database.");
+// 		current.setAbortAction(true);
+// 	}
+	
+	var niutils = new NeedItUtils();
+	var isPast = niutils.isDatePast(current.u_when_needed);
+
+	// If the isDatePast method returns true, the date is in the past.
+	if (isPast == true) {
+		gs.addErrorMessage("NeedItUtils : When needed date cannot be in the past.  Your request has not been saved to the database.");
 		current.setAbortAction(true);
 	}
+	
+	var isToday = niutils.isDateToday(current.u_when_needed);
+	
+	if(isToday == true) {
+		gs.addErrorMessage("You cannot submit NeedIt request for today.");
+	}
+	
+	//alert(niutils.calcDuration(current.u_when_needed));
+	
+	current.u_duration.value = niutils.calcDuration(current.u_when_needed);
+	
 
 })(current, previous);]]></script>
         <sys_class_name>sys_script</sys_class_name>
@@ -53,7 +73,7 @@
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>bda500f82fd3d410f751d3f62799b6f3</sys_id>
-        <sys_mod_count>5</sys_mod_count>
+        <sys_mod_count>10</sys_mod_count>
         <sys_name>NeedIt When needed field date</sys_name>
         <sys_overrides/>
         <sys_package display_value="NeedIt" source="x_58872_needit">6ead8e780f603200cd674f8ce1050ed1</sys_package>
@@ -61,8 +81,8 @@
         <sys_scope display_value="NeedIt">6ead8e780f603200cd674f8ce1050ed1</sys_scope>
         <sys_update_name>sys_script_bda500f82fd3d410f751d3f62799b6f3</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2020-09-14 09:24:25</sys_updated_on>
-        <template>u_requested_forDYNAMIC90d1921e5f510100a9ad2572f2b477fe^descriptionSAMEASshort_description^state=14^EQ</template>
+        <sys_updated_on>2020-09-24 07:45:28</sys_updated_on>
+        <template>u_requested_forDYNAMIC90d1921e5f510100a9ad2572f2b477fe^state=14^EQ</template>
         <when>before</when>
     </sys_script>
     <sys_translated_text action="delete_multiple" query="documentkey=bda500f82fd3d410f751d3f62799b6f3"/>
